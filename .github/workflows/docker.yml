@@ -28,22 +28,27 @@ jobs:
           push: true
           tags: ${{ github.ref_name == 'main' && 'coderuner/canary-demo:latest' || format('coderuner/canary-demo:{0}', github.ref_name) }}
 
-  merge_release_to_main:
+  create_pr_to_main:
     needs: build
     if: startsWith(github.ref, 'refs/heads/release-')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Merge release branch
+      # 安装 GitHub CLI
+      - name: Install GitHub CLI
+        run: sudo apt update && sudo apt install -y gh
+
+      - name: Create Pull Request to main
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git fetch origin ${{ github.ref_name }}  # 确保远程分支存在
-          git merge --no-ff origin/${{ github.ref_name }}
-          git push origin main
+          gh auth setup-git
+          gh pr create \
+            --title "Merge ${{ github.ref_name }} into main" \
+            --body "Automated PR from workflow: release branch ${{ github.ref_name }}" \
+            --base main \
+            --head ${{ github.ref_name }} \
+            --assignee @me
