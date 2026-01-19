@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 'release/*'  # 触发 release 分支
+      - 'release-*'  # 触发 release 分支
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
 
   merge_release_to_main:
     needs: build
-    if: startsWith(github.ref, 'refs/heads/release/')
+    if: startsWith(github.ref, 'refs/heads/release-')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main
