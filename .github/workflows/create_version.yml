@@ -7,20 +7,25 @@ on:
         description: 'Version number'
         required: true
 
+# 关键点：显式授予写权限
+permissions:
+  contents: write
+
 jobs:
   create_branches:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # 1️⃣ Checkout 仓库
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # 确保获取所有分支信息
+          fetch-depth: 0
 
-      # 2️⃣ 设置 git user，覆盖 origin
-      - name: Set up Git to use PAT
+      - name: Set up Git
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          # 将 origin URL 替换为 HTTPS + PAT
-          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/LL-sanmu-LL/canary-demo.git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       # 3️⃣ 执行脚本
       - name: Create feature and release branches
@@ -28,4 +33,5 @@ jobs:
           chmod +x .github/scripts/create_version_branches.sh
           .github/scripts/create_version_branches.sh ${{ github.event.inputs.version }}
         env:
-          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          # 使用内置变量，无需手动创建 Secret
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
