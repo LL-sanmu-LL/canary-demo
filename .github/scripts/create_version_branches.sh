@@ -13,9 +13,6 @@ echo "Creating feature-$VERSION and release-$VERSION branches..."
 git checkout main
 git pull origin main
 
-# ⚡ 核心：覆盖 origin URL，使用 PAT
-git remote set-url origin https://x-access-token:${PAT_TOKEN}@github.com/LL-sanmu-LL/canary-demo.git
-
 # 创建 feature 分支并 push
 FEATURE_BRANCH="feature-$VERSION"
 git checkout -b $FEATURE_BRANCH
