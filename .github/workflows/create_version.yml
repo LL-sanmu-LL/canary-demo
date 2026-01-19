@@ -1,0 +1,22 @@
+name: Create Version Branches
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number'
+        required: true
+
+jobs:
+  create_branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create feature and release branches
+        run: |
+          chmod +x .github/scripts/create_version_branches.sh
+          .github/scripts/create_version_branches.sh ${{ github.event.inputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
