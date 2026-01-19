@@ -39,16 +39,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 安装 GitHub CLI
       - name: Install GitHub CLI
         run: sudo apt update && sudo apt install -y gh
 
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
       - name: Create Pull Request to main
         run: |
-          gh auth setup-git
           gh pr create \
             --title "Merge ${{ github.ref_name }} into main" \
             --body "Automated PR from workflow: release branch ${{ github.ref_name }}" \
             --base main \
             --head ${{ github.ref_name }} \
             --assignee @me
+  
