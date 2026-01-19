@@ -19,4 +19,4 @@ jobs:
           chmod +x .github/scripts/create_version_branches.sh
           .github/scripts/create_version_branches.sh ${{ github.event.inputs.version }}
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
