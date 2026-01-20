@@ -22,42 +22,55 @@ k3d cluster create canary-demo \
 ```bash
 # 拉取镜像
 docker pull coderuner/canary-demo:release-0.3
+docker pull coderuner/canary-demo:release-0.5
 
 # 导入镜像到 k3d 集群
+k3d image import coderuner/canary-demo:release-0.3 -c canary-demo
 k3d image import coderuner/canary-demo:release-0.5 -c canary-demo
 ```
 
-## Kubernetes 操作
+## Kubernetes 部署流程
 
-### 查看 Pods
+### 部署顺序
+
+**正确的启动顺序**（按依赖关系）：
+
+1. **部署稳定版本**：先创建稳定版本的 Deployment 和 Service
+2. **部署金丝雀版本**：再创建金丝雀版本的 Deployment 和 Service  
+3. 部署负载均衡
+3. **配置 Ingress**：最后创建 Ingress 来分配流量
+
+### 详细部署步骤
+
 ```bash
-kubectl get pods
+# 1. 部署稳定版本
+kubectl $(k3d kubeconfig write canary-demo) apply -f stable-deployment.yaml      # 稳定版本Pod（3个副本）
+kubectl $(k3d kubeconfig write canary-demo) apply -f stable-service.yaml         # 稳定版本服务（canary-demo-stable）
+
+# 2. 部署金丝雀版本
+kubectl $(k3d kubeconfig write canary-demo) apply -f canary-deployment.yaml      # 金丝雀版本Pod（2个副本）
+kubectl $(k3d kubeconfig write canary-demo) apply -f canary-service.yaml         # 金丝雀版本服务（canary-demo-canary）
+
+# 3. 部署Traefik服务（用于流量分配）
+kubectl $(k3d kubeconfig write canary-demo) apply -f traefik_service.yaml        # Traefik服务配置（实现80:20流量分配）
+
+# 4. 配置Ingress（流量入口）
+kubectl $(k3d kubeconfig write canary-demo) apply -f canary-demo-ingress.yaml
 ```
 
-### 应用部署配置
-```bash
-# 应用稳定版本部署
-kubectl apply -f stable-deployment.yaml
+### 快速部署脚本
 
-# 应用金丝雀部署
-kubectl apply -f canary-deployment.yaml
 
-# 应用 ingress 配置
-kubectl apply -f canary-demo-ingress.yaml
-
-# 应用稳定版本服务
-kubectl apply -f stable-service.yaml
 ```
+kubectl --kubeconfig $(k3d kubeconfig write canary-demo) \                         
+  apply -f stable-deployment.yaml \
+           -f canary-deployment.yaml \
+           -f stable-service.yaml \
+           -f canary-service.yaml \
+           -f traefik_service.yaml \
+           -f ingressroute.yaml
 
-### 临时通道
-```bash
-kubectl port-forward pod/canary-demo-stable-9f7985bbb-kkxgk 18080:8080
+
+
+for i in {1..30}; do curl http://localhost; done
 ```
-
-## 标签
-- k3d
-- kubernetes
-- canary-deployment
-- demo
-
-
