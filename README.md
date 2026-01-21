@@ -25,18 +25,21 @@ docker pull coderuner/canary-demo:release-0.5
 
 # 导入镜像到 k3d 集群
 k3d image import coderuner/canary-demo:release-0.3 -c canary-demo
-k3d image import coderuner/canary-demo:release-0.5 -c canary-demo
+k3d image import coderuner/canary-demo:release-0.6 -c canary-demo
 ### 快速部署脚本
 
 
 ```
-kubectl --kubeconfig $(k3d kubeconfig write canary-demo) \                         
-  apply -f stable-deployment.yaml \
-           -f canary-deployment.yaml \
-           -f stable-service.yaml \
-           -f canary-service.yaml \
-           -f traefik_service.yaml \
-           -f ingressroute.yaml
+kubectl --kubeconfig $(k3d kubeconfig write canary-demo) apply \
+  -f stable-deployment.yaml \
+  -f canary-deployment.yaml \
+  -f stable-service.yaml \
+  -f canary-service.yaml \
+  -f traefik_service.yaml \
+  -f ingressroute.yaml
+  
+kubectl --kubeconfig $(k3d kubeconfig write canary-demo) rollout status deploy/canary-demo-canary
+
 
 
 
