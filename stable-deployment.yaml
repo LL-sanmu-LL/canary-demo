@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: coderuner/canary-demo:release-0.3
+        image: coderuner/canary-demo:release-0.5
         ports:
         - containerPort: 8080
         imagePullPolicy: IfNotPresent
